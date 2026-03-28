@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Gallery Undangan</title>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Parisienne&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Playfair Display', serif;
+  color:white;
+  text-align:center;
+  background:black;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+.bg{
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:url("background.jpg") center/cover no-repeat;
+  filter:blur(8px) brightness(0.4);
+  z-index:-1;
+}
+.bg::after{
+  content:"";
+  position:absolute; top:0; left:0;
+  width:100%; height:100%;
+  background:linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+}
+
+/* Halaman awal ala undangan */
+.start, .gallery, .message{
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  opacity:1;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.hidden{
+  opacity:0;
+  transform:translateY(30px);
+  pointer-events:none;
+}
+.start h1{
+  font-size:36px;
+  margin-bottom:10px;
+  font-family:'Pacifico', cursive;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+}
+.start .ornament{
+  width:300px;
+  margin:30px auto;
+}
+.start .names{
+  font-family:'Great Vibes', cursive;
+  font-size:60px;
+  margin:15px 0;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+}
+.start .divider{
+  width:120px;
+  height:2px;
+  background:#ff4d6d;
+  margin:10px auto 25px auto;
+  border-radius:2px;
+}
+button{
+  background:#ff4d6d;
+  color:white;
+  border:none;
+  padding:16px 30px;
+  font-size:18px;
+  border-radius:30px;
+  cursor:pointer;
+  transition:0.3s;
+}
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px #ff4d6d;
+  background:#ff6680;
+}
+
+/* Gallery 2 kolom grid */
+.gallery{
+  padding:40px 20px;
+  display:none;
+  opacity:0;
+  transform:translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.gallery.show{
+  opacity:1;
+  transform:translateY(0);
+}
+.film-strip{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:30px;
+  justify-items:center;
+  padding-bottom:50px;
+}
+.frame{
+  position:relative;
+  width:280px;
+  opacity:0;
+  transform:translateY(40px) scale(0.95);
+  transition:all 0.8s;
+}
+.frame.show{
+  opacity:1;
+  transform:translateY(0) scale(1) rotate(var(--rotate));
+}
+.frame img{
+  width:100%;
+  border-radius:15px;
+  cursor:pointer;
+  box-shadow:0 10px 25px rgba(0,0,0,0.4);
+  transition:transform 0.5s, filter 0.5s;
+  filter: brightness(0.95) saturate(1.1);
+}
+.frame img:hover{
+  transform: scale(1.05) rotate(1deg);
+  filter: brightness(1) saturate(1.2);
+  box-shadow:0 15px 30px rgba(0,0,0,0.6);
+}
+.frame::after{
+  content:"";
+  position:absolute;
+  bottom:-60px;
+  left:-20px;
+  width:150px;
+  height:150px;
+  background:url("frame.png") center/contain no-repeat;
+  opacity:0.6;
+}
+.lightbox{
+  display:none;
+  position:fixed;
+  top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.95);
+  justify-content:center;
+  align-items:center;
+}
+.lightbox img{
+  max-width:95%;
+  max-height:95%;
+  border-radius:10px;
+}
+.close{
+  position:absolute;
+  top:20px;
+  right:25px;
+  font-size:32px;
+  cursor:pointer;
+}
+.message{
+  display:none;
+  min-height:100vh;
+  padding:40px;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  font-size:20px;
+  line-height:1.7;
+  opacity:0;
+  transform:translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+  position:relative;
+}
+.message.show{
+  opacity:1;
+  transform:translateY(0);
+}
+.back-message{
+  position:fixed; /* supaya selalu terlihat */
+  top:70px;
+  left:15px;
+  font-size:24px;
+  background:rgba(0,0,0,0.6);
+  padding:6px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  display:none;
+  pointer-events:auto;
+  transition:0.3s;
+  z-index:9999; /* supaya tidak tertutup elemen lain */
+}
+.back-message:hover{
+  background:rgba(255,255,255,0.2);
+  color:#ff4d6d;
+}
+@media screen and (max-width:600px){
+  .film-strip{
+    grid-template-columns:1fr;
+    gap:20px;
+  }
+  .frame{
+    width:90%;
+  }
+}
+html{scroll-behavior:smooth;}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+<!-- HALAMAN AWAL -->
+<div class="start" id="start">
+  <img class="ornament" src="ornament_top.png" alt="ornament">
+  <h1>Memory Gallery ❤️</h1>
+  <div class="names">YOLI &amp; GENI</div>
+  <div class="divider"></div>
+  <button onclick="openMemory()">Buka Kenangan</button>
+  <img class="ornament" src="ornament_bottom.png" alt="ornament">
+</div>
+
+<!-- GALERI -->
+<div class="gallery" id="gallery">
+  <h2>Our Memories</h2>
+  <div class="film-strip">
+    <div class="frame"><img src="foto1.jpg" onclick="openImage(this.src)"></div>
+    <div class="frame"><img src="foto2.jpg" onclick="openImage(this.src)"></div>
+    <div class="frame"><img src="foto3.jpg" onclick="openImage(this.src)"></div>
+    <div class="frame"><img src="foto4.jpg" onclick="openImage(this.src)"></div>
+    <div class="frame"><img src="foto5.jpg" onclick="openImage(this.src)"></div>
+    <div class="frame"><img src="foto6.jpg" onclick="openImage(this.src)"></div>
+  </div>
+  <br><br>
+  <button onclick="openMessage()">Pesan Kenangan ❤️</button>
+</div>
+
+<!-- HALAMAN PESAN -->
+<div class="message" id="message">
+  <div class="back-message" id="back-message">← Kembali</div>
+  <h2>Pesan Kenangan ❤️</h2>
+  <p>
+    Terima kasih sudah membuka kenangan ini.<br><br>
+    Setiap foto menyimpan cerita yang tidak akan pernah hilang.<br><br>
+    Semoga setiap kali melihatnya kamu selalu tersenyum.
+  </p>
+</div>
+
+<!-- FULLSCREEN FOTO -->
+<div class="lightbox" id="lightbox">
+  <span class="close" onclick="closeImage()">×</span>
+  <img id="lightbox-img">
+</div>
+
+<!-- AUDIO -->
+<audio id="music" loop>
+  <source src="lagu.mp3" type="audio/mpeg">
+</audio>
+
+<!-- SCRIPT CONFETTI -->
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+function openMemory(){
+  document.getElementById("start").classList.add("hidden");
+  confetti({particleCount:150,spread:70,origin:{y:0.6},colors:['#ff4d6d','#ffcc66','#66ccff','#99ff99']});
+  setTimeout(()=>{
+    document.getElementById("start").style.display="none";
+    let gallery=document.getElementById("gallery");
+    gallery.style.display="flex";
+    setTimeout(()=>{ gallery.classList.add("show"); },50);
+    startScroll();
+  },600);
+  let music=document.getElementById("music");
+  fadeInAudio(music,2000);
+}
+
+function openImage(src){
+  document.getElementById("lightbox").style.display="flex";
+  document.getElementById("lightbox-img").src=src;
+}
+function closeImage(){ document.getElementById("lightbox").style.display="none"; }
+document.getElementById("lightbox").addEventListener("click",function(e){
+  if(e.target !== document.getElementById("lightbox-img")) closeImage();
+});
+
+function openMessage(){
+  const gallery=document.getElementById("gallery");
+  gallery.classList.remove("show");
+  gallery.style.display="none";
+  const message=document.getElementById("message");
+  message.style.display="flex";
+  const backBtn=document.getElementById("back-message");
+  backBtn.style.display="block";
+  setTimeout(()=>{ message.classList.add("show"); },50);
+}
+
+const backBtn=document.getElementById("back-message");
+backBtn.addEventListener("click",()=>{
+  const message=document.getElementById("message");
+  const gallery=document.getElementById("gallery");
+  message.classList.remove("show");
+  backBtn.style.display="none";
+  setTimeout(()=>{
+    message.style.display="none";
+    gallery.style.display="flex";
+    void gallery.offsetWidth;
+    gallery.classList.add("show");
+  },400);
+});
+
+function startScroll(){
+  let frames=document.querySelectorAll(".frame");
+  frames.forEach(frame=>{
+    frame.style.setProperty("--rotate",(Math.random()*6-3)+"deg");
+  });
+  function reveal(){
+    let windowHeight=window.innerHeight;
+    frames.forEach((frame,index)=>{
+      let top=frame.getBoundingClientRect().top;
+      if(top<windowHeight-100 && !frame.classList.contains("show")){
+        setTimeout(()=>{frame.classList.add("show");},index*150);
+      }
+    });
+  }
+  window.addEventListener("scroll",reveal);
+  reveal();
+}
+
+function fadeInAudio(audio,duration=2000){
+  audio.volume=0;
+  audio.play();
+  let step=0.05;
+  let interval=duration*step/1000;
+  let vol=0;
+  let fade=setInterval(()=>{
+    vol+=step;
+    if(vol>=1){vol=1; clearInterval(fade);}
+    audio.volume=vol;
+  },interval);
+}
+</script>
+</body>
+</html>
